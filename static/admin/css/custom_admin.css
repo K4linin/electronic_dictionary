@@ -1,0 +1,87 @@
+/* static/admin/css/custom_admin.css */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #191a1f !important;
+    color: #d1d4d7 !important;
+}
+
+#site-name a {
+    color: #d1d4d7 !important;
+    font-weight: 700;
+}
+
+.module h2, .module caption, .inline-group h2 {
+    background: #2c44b6 !important;
+    color: #fff !important;
+    border-radius: 8px !important;
+}
+
+.submit-row input, button {
+    background: #212121 !important;
+    border: none !important;
+    border-radius: 8px !important;
+    color: #fff !important;
+    padding: 10px 20px !important;
+}
+
+.submit-row input:hover, button:hover {
+    background: #2c44b6 !important;
+}
+
+#branding h1 {
+    color: rgb(46, 64, 81) !important;
+}
+
+a:link, a:visited {
+    color: #ffffff !important;
+}
+
+a:hover {
+    color: #ffffff !important;
+}
+
+.module {
+    background: #1f222b !important;
+    border-radius: 10px !important;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3) !important;
+}
+
+.field-box, .inline-related {
+    background: #2a2d37 !important;
+    border-radius: 8px !important;
+    padding: 10px !important;
+}
+
+input, select, textarea {
+    border-radius: 8px !important;
+    border: 1px solid #1f222b !important;
+    background-color: #2a2d37 !important;
+    color: #d1d4d7 !important;
+}
+
+th, td {
+    border-radius: 8px !important;
+    background-color: #1f222b !important;
+    color: #d1d4d7 !important;
+}
+
+.change-list .filtered {
+    background: #1f222b !important;
+    border-radius: 10px !important;
+}
+
+.drag-drop-container {
+    border: 2px dashed #2a2d37 !important;
+    background-color: #2a2d37 !important;
+    padding: 30px !important; /* Увеличиваем внутренние отступы */
+    min-height: 100px !important; /* Увеличиваем минимальную высоту */
+    width: 100% !important; /* Занимает всю доступную ширину */
+    box-sizing: border-box !important;
+}
+
+.drag-drop-area p {
+    margin: 0 !important;
+    font-size: 16px !important;
+}

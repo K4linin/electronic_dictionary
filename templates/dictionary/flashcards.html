@@ -1,0 +1,308 @@
+<!-- templates/dictionary/flashcards.html -->
+{% extends 'dictionary/base.html' %}
+
+{% block content %}
+    <h2 style="text-align: center; color: #d1d4d7; font-weight: 700; margin-bottom: 20px;">Карточки для заучивания</h2>
+
+    {% if not card_set %}
+        <!-- Фильтрация по тегам -->
+        <div style="text-align: center; margin-bottom: 20px;">
+            <form method="get" action="{% url 'flashcards' %}">
+                <label for="tag" style="color: #d1d4d7; margin-right: 10px;">Фильтр по тегу:</label>
+                <select name="tag" id="tag" onchange="this.form.submit()" style="padding: 5px; background-color: #2a2d37; color: #d1d4d7; border: 1px solid #1f222b; border-radius: 5px;">
+                    <option value="">Все теги</option>
+                    {% for tag in tags %}
+                        <option value="{{ tag.id }}" {% if request.GET.tag == tag.id|stringformat:"s" %}selected{% endif %}>{{ tag.name }}</option>
+                    {% endfor %}
+                </select>
+            </form>
+        </div>
+
+        <!-- Создание нового набора -->
+        <div style="text-align: center; margin-bottom: 20px;">
+            <button onclick="document.getElementById('create-set-form').style.display='block'" style="background-color: #2c44b6; color: #fff; border: none; border-radius: 20px; padding: 10px 20px; cursor: pointer;">Создать новый набор</button>
+            <div id="create-set-form" style="display: none; margin-top: 20px;">
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="create_set" value="1">
+                    {{ form.as_p }}
+                    <button type="submit" style="background-color: #2c44b6; color: #fff; border: none; border-radius: 20px; padding: 10px 20px; cursor: pointer;">Создать</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Список тем -->
+        <div class="terms-list" style="display: flex; flex-direction: column; gap: 20px;">
+            {% for set in card_sets %}
+                <a href="{% url 'flashcards' %}?card_set={{ set.id }}" style="text-decoration: none; color: inherit;">
+                    <div class="term-card" style="background-color: #1f222b; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); transition: transform 0.2s; cursor: pointer;">
+                        <h3 style="margin: 0 0 10px; color: #d1d4d7; font-weight: 500;">{{ set.name }}</h3>
+                        <p style="margin: 0; color: #a1a5aa;">Теги: {% for tag in set.tags.all %}{{ tag.name }}{% if not forloop.last %}, {% endif %}{% empty %}Нет тегов{% endfor %}</p>
+                        {% if user.is_authenticated %}
+                            <a href="{% if set.id in favorite_card_set_ids %}{% url 'remove_cardset_from_favorites' set.id %}{% else %}{% url 'add_cardset_to_favorites' set.id %}{% endif %}" class="favorite-icon {% if set.id in favorite_card_set_ids %}favorited{% endif %}">
+                                <i class="fas fa-heart"></i>
+                            </a>
+                        {% endif %}
+                    </div>
+                </a>
+            {% empty %}
+                <p style="text-align: center; color: #a1a5aa; font-size: 18px;">Нет наборов карточек.</p>
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- Количество карточек -->
+        <p style="text-align: center; color: #a1a5aa; font-size: 16px; margin-bottom: 20px;">
+            Всего карточек: {{ entries|length }}
+        </p>
+
+        <!-- Кнопка "Начать" -->
+        <div id="start-screen" style="text-align: center; margin-top: 50px;">
+            <button id="start-button" style="background-color: #2c44b6; color: #fff; border: none; border-radius: 20px; padding: 15px 30px; cursor: pointer; font-size: 18px;">Начать</button>
+        </div>
+
+        <!-- Карточки и прогресс -->
+        <div id="flashcard-container" style="display: none; text-align: center; width: 100%;">
+            <!-- Прогресс -->
+            <div style="display: flex; align-items: center; justify-content: center; margin-bottom: 20px; width: 100%;">
+                <div style="width: 300px; height: 10px; background-color: #2a2d37; border-radius: 5px; overflow: hidden;">
+                    <div id="progress-bar" style="width: 0%; height: 100%; background-color: #2c44b6; transition: width 0.3s;"></div>
+                </div>
+                <span id="progress-text" style="margin-left: 10px; color: #a1a5aa; font-size: 16px;">0/{{ entries|length }}</span>
+            </div>
+
+            <!-- Отображение карточек -->
+            <div id="flashcard-stack" style="position: relative; height: 400px; width: 300px; margin: 0 auto;">
+                {% for entry in entries %}
+                    <div class="flashcard" data-id="{{ entry.id|default:'0' }}" 
+                         data-eng-term="{{ entry.eng_term|default:'No term' }}" 
+                         data-rus-term="{{ entry.rus_term|default:'No translation' }}" 
+                         style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #1f222b; border-radius: 10px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); z-index: {{ forloop.revcounter0 }};">
+                        <div class="front" style="position: absolute; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                            <h3 style="color: #d1d4d7; font-weight: 500;">{{ entry.rus_term|default:"No term" }}</h3>
+                            <p style="color: #a1a5aa;">Нажмите, чтобы увидеть перевод</p>
+                        </div>
+                        <div class="back" style="position: absolute; width: 100%; height: 100%; display: none; flex-direction: column; justify-content: center; align-items: center;">
+                            <p style="color: #a1a5aa; margin: 5px 0;">{{ entry.transcription|default:"No transcription" }}</p>
+                            <h3 style="color: #d1d4d7; font-weight: 500; margin: 5px 0; text-transform: uppercase;">{{ entry.eng_term|default:"No translation" }}</h3>
+                            {% if entry.image and entry.image.url %}
+                                <img src="{{ entry.image.url }}" alt="{{ entry.eng_term|default:'No term' }}" style="max-width: 150px; border-radius: 10px; margin: 10px 0;">
+                            {% else %}
+                                <p style="color: #a1a5aa;">No image available</p>
+                            {% endif %}
+                            {% if entry.audio and entry.audio.url %}
+                                <audio controls style="margin-top: 10px;" class="audio-player">
+                                    <source src="{{ entry.audio.url }}" type="audio/mpeg">
+                                    Ваш браузер не поддерживает воспроизведение аудио.
+                                </audio>
+                            {% else %}
+                                <p style="color: #a1a5aa;">No audio available</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% empty %}
+                    <p style="text-align: center; color: #a1a5aa; font-size: 18px;">Нет карточек в этом наборе.</p>
+                {% endfor %}
+            </div>
+
+            <!-- Кнопки для смахивания -->
+            <div style="text-align: center; margin-top: 30px; position: relative; z-index: 10;">
+                <button id="swipe-left" style="background-color: #ff4444; color: #fff; border: none; border-radius: 20px; padding: 10px 20px; cursor: pointer; margin-right: 20px; font-size: 16px; z-index: 10;">Не запомнил</button>
+                <button id="swipe-right" style="background-color: #2c44b6; color: #fff; border: none; border-radius: 20px; padding: 10px 20px; cursor: pointer; font-size: 16px; z-index: 10;">Запомнил</button>
+            </div>
+
+            <!-- Статистика -->
+            <div id="stats" style="display: none; text-align: center; margin-top: 30px;">
+                <h3 style="color: #d1d4d7; font-size: 24px;">Статистика</h3>
+                <p style="color: #a1a5aa; font-size: 18px;">Запомнено: <span id="correct-count">0</span></p>
+                <p style="color: #a1a5aa; font-size: 18px;">Не запомнено: <span id="incorrect-count">0</span></p>
+                <div id="incorrect-entries" style="margin-top: 20px;">
+                    <h4 style="color: #d1d4d7; font-weight: 500;">Слова, которые вы не запомнили:</h4>
+                    <div class="terms-list" style="display: flex; flex-direction: column; gap: 20px; margin-top: 10px;">
+                        {% comment %} Список будет заполнен JavaScript {% endcomment %}
+                    </div>
+                </div>
+                <button onclick="restartFlashcards()" style="background-color: #2c44b6; color: #fff; border: none; border-radius: 20px; padding: 10px 20px; cursor: pointer; margin-top: 20px;">Начать заново</button>
+            </div>
+        </div>
+    {% endif %}
+
+    <style>
+        .term-card:hover {
+            transform: translateY(-5px);
+        }
+        .flashcard {
+            /* Убрали transform-style и transition */
+        }
+        .flashcard.flipped .front {
+            display: none;
+        }
+        .flashcard.flipped .back {
+            display: flex;
+        }
+        .front, .back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .back {
+            display: none; /* Изначально скрыта */
+        }
+        /* Стили для выравнивания аудиоплеера */
+        .audio-player {
+            width: 80%;
+            max-width: 200px;
+        }
+    </style>
+
+    <!-- Передаём данные для JavaScript с помощью json_script -->
+    {{ favorite_ids|json_script:"favorite-ids" }}
+    {{ card_set.id|json_script:"card-set-id" }}
+    {{ entries|length|json_script:"total-cards" }}
+
+    <script>
+        // Извлекаем данные из JSON
+        const favoriteIds = JSON.parse(document.getElementById('favorite-ids').textContent);
+        const cardSetId = JSON.parse(document.getElementById('card-set-id').textContent);
+        const totalCards = JSON.parse(document.getElementById('total-cards').textContent);
+
+        console.log("favoriteIds:", favoriteIds); // Отладка
+        console.log("cardSetId:", cardSetId);
+        console.log("totalCards:", totalCards);
+
+        let correctCount = 0;
+        let incorrectCount = 0;
+        let currentCardIndex = 0;
+        let incorrectEntries = [];
+        const cards = document.querySelectorAll('.flashcard');
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+
+        console.log("Total cards found:", cards.length); // Отладка
+
+        function updateProgress() {
+            const progress = (currentCardIndex / totalCards) * 100;
+            progressBar.style.width = `${progress}%`;
+            progressText.textContent = `${currentCardIndex}/${totalCards}`;
+        }
+
+        function showNextCard() {
+            if (currentCardIndex < cards.length) {
+                console.log("Showing card:", currentCardIndex); // Отладка
+                cards[currentCardIndex].style.display = 'block'; // Убедимся, что карточка видна
+                cards[currentCardIndex].addEventListener('click', toggleCard);
+                updateProgress();
+            } else {
+                document.getElementById('flashcard-stack').style.display = 'none';
+                document.getElementById('swipe-left').style.display = 'none';
+                document.getElementById('swipe-right').style.display = 'none';
+                document.getElementById('stats').style.display = 'block';
+                document.getElementById('correct-count').textContent = correctCount;
+                document.getElementById('incorrect-count').textContent = incorrectCount;
+
+                // Отображаем список слов, которые не запомнили
+                const incorrectList = document.querySelector('#incorrect-entries .terms-list');
+                incorrectList.innerHTML = '';
+                incorrectEntries.forEach(entry => {
+                    const isFavorite = favoriteIds.includes(parseInt(entry.id));
+                    const entryHtml = `
+                        <a href="/entry/${entry.eng_term}/" style="text-decoration: none; color: inherit;">
+                            <div class="term-card" style="background-color: #1f222b; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); transition: transform 0.2s; cursor: pointer;">
+                                <h3 style="margin: 0 0 10px; color: #d1d4d7; font-weight: 500;">${entry.eng_term}</h3>
+                                <p style="margin: 0; color: #a1a5aa;">${entry.rus_term}</p>
+                                <a href="/entry/${entry.eng_term}/${isFavorite ? 'remove-from-favorites' : 'add-to-favorites'}/?next=flashcards&card_set=${entry.card_set_id}" class="favorite-icon ${isFavorite ? 'favorited' : ''}">
+                                    <i class="fas fa-heart"></i>
+                                </a>
+                            </div>
+                        </a>
+                    `;
+                    incorrectList.innerHTML += entryHtml;
+                });
+                if (incorrectEntries.length === 0) {
+                    incorrectList.innerHTML = '<p style="text-align: center; color: #a1a5aa; font-size: 18px;">Все слова запомнены!</p>';
+                }
+            }
+        }
+
+        function toggleCard(event) {
+            const card = event.currentTarget;
+            console.log("Toggling card:", card); // Отладка
+            const front = card.querySelector('.front');
+            const back = card.querySelector('.back');
+            if (card.classList.contains('flipped')) {
+                card.classList.remove('flipped');
+                front.style.display = 'flex';
+                back.style.display = 'none';
+            } else {
+                card.classList.add('flipped');
+                front.style.display = 'none';
+                back.style.display = 'flex';
+            }
+        }
+
+        document.getElementById('swipe-right').addEventListener('click', () => {
+            console.log("Swipe right clicked"); // Отладка
+            if (currentCardIndex < cards.length) {
+                const card = cards[currentCardIndex];
+                card.style.display = 'none'; // Просто скрываем карточку
+                correctCount++;
+                currentCardIndex++;
+                showNextCard();
+            }
+        });
+
+        document.getElementById('swipe-left').addEventListener('click', () => {
+            console.log("Swipe left clicked"); // Отладка
+            if (currentCardIndex < cards.length) {
+                const card = cards[currentCardIndex];
+                const engTerm = card.dataset.engTerm;
+                const rusTerm = card.dataset.rusTerm;
+                const isFavorite = favoriteIds.includes(parseInt(card.dataset.id));
+                incorrectEntries.push({
+                    eng_term: engTerm,
+                    rus_term: rusTerm,
+                    id: card.dataset.id,
+                    card_set_id: cardSetId,
+                    is_favorite: isFavorite
+                });
+                card.style.display = 'none'; // Просто скрываем карточку
+                incorrectCount++;
+                currentCardIndex++;
+                showNextCard();
+            }
+        });
+
+        function restartFlashcards() {
+            correctCount = 0;
+            incorrectCount = 0;
+            currentCardIndex = 0;
+            incorrectEntries = [];
+            cards.forEach(card => {
+                card.style.display = 'block'; // Сбрасываем display
+                card.classList.remove('flipped');
+                const front = card.querySelector('.front');
+                const back = card.querySelector('.back');
+                front.style.display = 'flex';
+                back.style.display = 'none';
+            });
+            document.getElementById('flashcard-stack').style.display = 'block';
+            document.getElementById('swipe-left').style.display = 'inline-block';
+            document.getElementById('swipe-right').style.display = 'inline-block';
+            document.getElementById('stats').style.display = 'none';
+            document.querySelector('#incorrect-entries .terms-list').innerHTML = '';
+            updateProgress();
+            showNextCard();
+        }
+
+        // Показываем карточки после нажатия кнопки "Начать"
+        document.getElementById('start-button').addEventListener('click', () => {
+            console.log("Start button clicked"); // Отладка
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('flashcard-container').style.display = 'block';
+            showNextCard();
+        });
+    </script>
+{% endblock %}

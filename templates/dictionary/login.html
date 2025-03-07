@@ -1,0 +1,37 @@
+<!-- templates/dictionary/login.html -->
+{% extends 'dictionary/base.html' %}
+
+{% block content %}
+    <div class="entry-card" style="background-color: #1f222b; padding: 30px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); max-width: 400px; margin: 0 auto;">
+        <h2 style="color: #d1d4d7; font-weight: 700; text-align: center;">Вход</h2>
+        {% if messages %}
+            {% for message in messages %}
+                <p style="color: {% if message.tags == 'error' %}#ff4444{% else %}#2c44b6{% endif %}; text-align: center;">{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" style="background-color: #2c44b6; color: #fff; border: none; border-radius: 20px; padding: 10px 20px; cursor: pointer; display: block; margin: 0 auto;">Войти</button>
+        </form>
+        <div style="text-align: center; margin-top: 20px;">
+            <a href="{% url 'social:begin' 'yandex-oauth2' %}" style="background-color: #2c44b6; color: #fff; padding: 10px 20px; border-radius: 20px; text-decoration: none; display: inline-block;">Войти через Яндекс</a>
+        </div>
+        <p style="text-align: center; color: #a1a5aa; margin-top: 20px;">Нет аккаунта? <a href="{% url 'register' %}" style="color: #2c44b6;">Зарегистрироваться</a></p>
+    </div>
+
+    <style>
+        form p {
+            color: #d1d4d7;
+        }
+        form input {
+            background-color: #2a2d37;
+            color: #d1d4d7;
+            border: 1px solid #1f222b;
+            border-radius: 8px;
+            padding: 8px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+    </style>
+{% endblock %}

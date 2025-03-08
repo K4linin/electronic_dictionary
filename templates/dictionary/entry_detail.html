@@ -1,0 +1,70 @@
+<!-- templates/dictionary/entry_detail.html -->
+{% extends 'dictionary/base.html' %}
+
+{% block content %}
+    <div class="entry-card" style="background-color: #1f222b; padding: 30px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); position: relative;">
+        <h2 style="color: #d1d4d7; font-weight: 700;">{{ entry.eng_term }} - {{ entry.rus_term }}</h2>
+        {% if user.is_authenticated %}
+            <div style="position: absolute; top: 20px; right: 20px;">
+                {% if is_favorite %}
+                    <a href="{% url 'remove_from_favorites' entry.eng_term %}" style="background-color: #2c44b6; color: #fff; padding: 5px 10px; border-radius: 20px; text-decoration: none; font-size: 14px;">Удалить из избранного</a>
+                {% else %}
+                    <a href="{% url 'add_to_favorites' entry.eng_term %}" style="background-color: #2c44b6; color: #fff; padding: 5px 10px; border-radius: 20px; text-decoration: none; font-size: 14px;">Добавить в избранное</a>
+                {% endif %}
+            </div>
+        {% else %}
+            <p style="position: absolute; top: 20px; right: 20px; color: #a1a5aa; font-size: 14px;">Пожалуйста, <a href="{% url 'login' %}" style="color: #2c44b6;">войдите</a>, чтобы добавить в избранное.</p>
+        {% endif %}
+        <p><strong>Описание (ENG):</strong> {{ entry.eng_desc }}</p>
+        <p><strong>Транскрипция:</strong> {{ entry.transcription }}</p>
+        <p><strong>Описание (RU):</strong> {{ entry.rus_desc }}</p>
+        {% if entry.image %}
+            <img src="{{ entry.image.url }}" alt="{{ entry.eng_term }}" style="max-width: 300px; border-radius: 10px; margin: 10px 0;">
+        {% endif %}
+        {% if entry.audio %}
+            <div class="audio-player">
+                <strong>Произношение:</strong>
+                <audio controls>
+                    <source src="{{ entry.audio.url }}" type="audio/mpeg">
+                    Ваш браузер не поддерживает воспроизведение аудио.
+                </audio>
+            </div>
+        {% endif %}
+
+        <h3 style="color: #d1d4d7; font-weight: 500;">Устойчивые словосочетания</h3>
+        <ul style="color: #a1a5aa;">
+            {% for phrase in entry.phrases.all %}
+                <li>{{ phrase.eng_phrase }} - {{ phrase.rus_phrase }}</li>
+            {% empty %}
+                <li>Нет словосочетаний</li>
+            {% endfor %}
+        </ul>
+
+        <h3 style="color: #d1d4d7; font-weight: 500;">Примеры</h3>
+        <ul style="color: #a1a5aa;">
+            {% for example in entry.examples.all %}
+                <li>{{ example.text }}</li>
+            {% empty %}
+                <li>Нет примеров</li>
+            {% endfor %}
+        </ul>
+
+        <h3 style="color: #d1d4d7; font-weight: 500;">Ссылки</h3>
+        <ul>
+            {% for link in entry.links.all %}
+                <li><a href="{{ link.url }}" style="color: #2c44b6; text-decoration: none;">{{ link.url }}</a></li>
+            {% empty %}
+                <li>Нет ссылок</li>
+            {% endfor %}
+        </ul>
+
+        <h3 style="color: #d1d4d7; font-weight: 500;">Теги</h3>
+        <ul style="color: #a1a5aa;">
+            {% for tag in entry.dictionarytag_set.all %}
+                <li>{{ tag.tag.name }}</li>
+            {% empty %}
+                <li>Нет тегов</li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock %}

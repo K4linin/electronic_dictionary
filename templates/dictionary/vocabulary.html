@@ -1,0 +1,32 @@
+<!-- templates/dictionary/vocabulary.html -->
+{% extends 'dictionary/base.html' %}
+
+{% block content %}
+    <h2 style="text-align: center; color: #d1d4d7; font-weight: 700; margin-bottom: 30px;">Словарник</h2>
+    {% if user.is_authenticated %}
+        <div class="terms-list" style="display: flex; flex-direction: column; gap: 20px;">
+            {% for entry in entries %}
+                <a href="{% url 'entry_detail' entry.eng_term %}" style="text-decoration: none; color: inherit;">
+                    <div class="term-card" style="background-color: #1f222b; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); transition: transform 0.2s; cursor: pointer;">
+                        <h3 style="margin: 0 0 10px; color: #d1d4d7; font-weight: 500;">{{ entry.eng_term }}</h3>
+                        <p style="margin: 0; color: #a1a5aa;">{{ entry.rus_term }}</p>
+                        {% if user.is_authenticated %}
+                            <a href="{% if entry.id in favorite_ids %}{% url 'remove_from_favorites' entry.eng_term %}?next=vocabulary{% else %}{% url 'add_to_favorites' entry.eng_term %}?next=vocabulary{% endif %}" class="favorite-icon {% if entry.id in favorite_ids %}favorited{% endif %}">
+                                <i class="fas fa-heart"></i>
+                            </a>
+                        {% endif %}
+                    </div>
+                </a>
+            {% empty %}
+                <p style="text-align: center; color: #a1a5aa; font-size: 18px;">Нет терминов.</p>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p style="text-align: center; color: #a1a5aa; font-size: 18px;">Пожалуйста, <a href="{% url 'login' %}" style="color: #2c44b6;">войдите</a>, чтобы просмотреть словарник.</p>
+    {% endif %}
+    <style>
+        .term-card:hover {
+            transform: translateY(-5px);
+        }
+    </style>
+{% endblock %}

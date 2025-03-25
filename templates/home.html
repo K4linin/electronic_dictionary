@@ -1,0 +1,53 @@
+<!-- templates/home.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>Главная страница</h2>
+
+    <div style="max-width: 800px; margin: 0 auto;">
+        <!-- Фильтр по тегам -->
+        <div style="margin-bottom: 30px; display: flex; align-items: center; gap: 15px;">
+            <label for="tag-filter" style="font-size: 18px; font-weight: 600; color: #333;">Фильтр по тегу:</label>
+            <select id="tag-filter" onchange="window.location.href='/?tag=' + this.value;" style="padding: 10px; border-radius: 15px; border: 2px solid #106a80; font-size: 16px; color: #333; background-color: #fff; cursor: pointer;">
+                <option value="">Все теги</option>
+                {% for tag in tags %}
+                    <option value="{{ tag.id }}" {% if request.GET.tag == tag.id|stringformat:"s" %}selected{% endif %}>{{ tag.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Список записей -->
+        {% if entries %}
+            <div style="background-color: #fff; border-radius: 20px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); overflow: hidden;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background-color: #106a80; color: #fff;">
+                            <th style="padding: 15px; text-align: left; font-size: 18px; font-weight: 600;">Английский термин</th>
+                            <th style="padding: 15px; text-align: left; font-size: 18px; font-weight: 600;">Русский термин</th>
+                            <th style="padding: 15px; text-align: left; font-size: 18px; font-weight: 600;">Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in entries %}
+                            <tr style="background-color: #fff; border-bottom: 1px solid #e0e0e0;">
+                                <td style="padding: 15px;">
+                                    <a href="{% url 'entry_detail' entry.eng_term %}" style="color: #106a80; text-decoration: none; font-weight: 500;">{{ entry.eng_term }}</a>
+                                </td>
+                                <td style="padding: 15px;">{{ entry.rus_term }}</td>
+                                <td style="padding: 15px;">
+                                    {% if entry.id in favorite_ids %}
+                                        <a href="{% url 'remove_from_favorites' entry.eng_term %}?next=home" style="color: #e74c3c; text-decoration: none; font-weight: 500;">Удалить из избранного</a>
+                                    {% else %}
+                                        <a href="{% url 'add_to_favorites' entry.eng_term %}?next=home" style="color: #106a80; text-decoration: none; font-weight: 500;">Добавить в избранное</a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p style="color: #666; text-align: center; font-size: 18px; background-color: #fff; padding: 20px; border-radius: 20px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">Записи не найдены.</p>
+        {% endif %}
+    </div>
+{% endblock %}

@@ -1,0 +1,182 @@
+<!-- templates/base.html -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Электронный словарь</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            background-color: #f5f5f5; /* Светлый фон */
+            color: #333; /* Тёмный текст */
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .navbar {
+            background-color: #106a80; /* Тёмно-бирюзовый */
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .navbar-left, .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .navbar a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+        .navbar a:hover {
+            color: #ffd700; /* Золотистый цвет при наведении */
+        }
+        /* Выпадающее меню "Обучение" */
+        .dropdown {
+            position: relative;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #106a80;
+            min-width: 200px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+            border-radius: 15px;
+            top: 100%;
+            left: 0;
+        }
+        .dropdown-content a {
+            color: #fff;
+            padding: 12px 16px;
+            display: block;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        .dropdown-content a:hover {
+            background-color: #0d5466; /* Чуть темнее при наведении */
+            border-radius: 15px;
+        }
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+        /* Поиск */
+        .search-form {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .search-form input[type="text"] {
+            padding: 10px;
+            border-radius: 15px;
+            border: none;
+            font-size: 16px;
+            width: 200px;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .search-form button {
+            background-color: #ffd700;
+            color: #333;
+            border: none;
+            border-radius: 15px;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .search-form button:hover {
+            background-color: #e6c200;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+        .messages {
+            margin-bottom: 20px;
+        }
+        .messages p {
+            background-color: #106a80;
+            color: #fff;
+            padding: 15px;
+            border-radius: 15px;
+            margin: 10px 0;
+            font-size: 16px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            font-size: 36px;
+            font-weight: 700;
+            color: #106a80;
+            text-align: center;
+            margin-bottom: 40px;
+            text-transform: uppercase;
+        }
+        button, a.button {
+            background-color: #106a80;
+            color: #fff;
+            border: none;
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.3s ease;
+        }
+        button:hover, a.button:hover {
+            background-color: #0d5466; /* Чуть темнее при наведении */
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="navbar-left">
+            <a href="{% url 'home' %}">Главная</a>
+            <div class="dropdown">
+                <a href="#">Обучение</a>
+                <div class="dropdown-content">
+                    <a href="{% url 'flashcards' %}">Карточки</a>
+                    <a href="{% url 'vocabulary' %}">Словарник</a>
+                    <a href="{% url 'personal_lists' %}">Личные списки</a>
+                    <a href="{% url 'articles' %}">Статьи</a>
+                </div>
+            </div>
+            <a href="{% url 'favorites' %}">Избранное</a>
+        </div>
+        <div class="navbar-right">
+            <form class="search-form" action="{% url 'search' %}" method="get">
+                <input type="text" name="q" placeholder="Поиск..." value="{{ request.GET.q }}">
+                <button type="submit">Найти</button>
+            </form>
+            {% if user.is_authenticated %}
+                <a href="{% url 'profile' %}">Профиль</a>
+                <a href="{% url 'logout' %}">Выйти</a>
+            {% else %}
+                <a href="{% url 'login' %}">Войти</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="container">
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% block content %}
+        {% endblock %}
+    </div>
+</body>
+</html>

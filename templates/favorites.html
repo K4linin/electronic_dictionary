@@ -1,0 +1,73 @@
+<!-- templates/dictionary/favorites.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2 style="text-align: center; color: #d1d4d7; font-weight: 700; margin-bottom: 30px;">Избранное</h2>
+
+    <div style="max-width: 800px; margin: 0 auto;">
+        <!-- Избранные слова -->
+        <h3 style="color: #d1d4d7; font-weight: 500; margin-bottom: 15px;">Слова</h3>
+        {% if entries %}
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 40px;">
+                <thead>
+                    <tr style="background-color: #1f222b; color: #d1d4d7;">
+                        <th style="padding: 10px; border: 1px solid #2a2d37; text-align: left;">Английское слово</th>
+                        <th style="padding: 10px; border: 1px solid #2a2d37; text-align: left;">Русский перевод</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in entries %}
+                        <tr style="background-color: #1f222b;">
+                            <td style="padding: 10px; border: 1px solid #2a2d37;"><a href="{% url 'entry_detail' entry.eng_term %}" style="color: #2c44b6; text-decoration: none;">{{ entry.eng_term }}</a></td>
+                            <td style="padding: 10px; border: 1px solid #2a2d37;">{{ entry.rus_term }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p style="color: #a1a5aa;">У вас пока нет избранных слов.</p>
+        {% endif %}
+
+        <!-- Избранные наборы карточек -->
+        <h3 style="color: #d1d4d7; font-weight: 500; margin-bottom: 15px;">Наборы карточек</h3>
+        {% if card_sets %}
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 40px;">
+                <thead>
+                    <tr style="background-color: #1f222b; color: #d1d4d7;">
+                        <th style="padding: 10px; border: 1px solid #2a2d37; text-align: left;">Название набора</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for card_set in card_sets %}
+                        <tr style="background-color: #1f222b;">
+                            <td style="padding: 10px; border: 1px solid #2a2d37;"><a href="{% url 'flashcards' %}?card_set={{ card_set.id }}" style="color: #2c44b6; text-decoration: none;">{{ card_set.name }}</a></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p style="color: #a1a5aa;">У вас пока нет избранных наборов карточек.</p>
+        {% endif %}
+
+        <!-- Избранные темы словарника -->
+        <h3 style="color: #d1d4d7; font-weight: 500; margin-bottom: 15px;">Темы словарника</h3>
+        {% if topics %}
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 40px;">
+                <thead>
+                    <tr style="background-color: #1f222b; color: #d1d4d7;">
+                        <th style="padding: 10px; border: 1px solid #2a2d37; text-align: left;">Название темы</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for topic in topics %}
+                        <tr style="background-color: #1f222b;">
+                            <td style="padding: 10px; border: 1px solid #2a2d37;"><a href="{% url 'vocabulary' %}" style="color: #2c44b6; text-decoration: none;">{{ topic.name }}</a></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p style="color: #a1a5aa;">У вас пока нет избранных тем словарника.</p>
+        {% endif %}
+    </div>
+{% endblock %}

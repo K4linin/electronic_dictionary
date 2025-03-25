@@ -1,0 +1,81 @@
+<!-- templates/dictionary/vocabulary.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2 style="text-align: center; color: #d1d4d7; font-weight: 700; margin-bottom: 30px;">Словарник</h2>
+
+    <div style="max-width: 800px; margin: 0 auto;">
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Форма для создания новой темы -->
+        <h3 style="color: #d1d4d7; font-weight: 500; margin-bottom: 10px;">Создать новую тему</h3>
+        <form method="post" style="margin-bottom: 30px;">
+            {% csrf_token %}
+            <input type="hidden" name="create_topic" value="1">
+            {{ form.as_p }}
+            <button type="submit" style="background-color: #2c44b6; color: #fff; border: none; border-radius: 20px; padding: 10px 20px; cursor: pointer;">Создать</button>
+        </form>
+
+        <!-- Список тем -->
+        {% for topic in topics %}
+            <div class="topic-block" style="margin-bottom: 40px; position: relative;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h3 style="color: #d1d4d7; font-weight: 500; margin: 0;">{{ topic.name }}</h3>
+                    <div>
+                        {% if topic.id in favorite_topic_ids %}
+                            <a href="{% url 'remove_topic_from_favorites' topic.id %}" class="favorite-icon favorited" title="Убрать из избранного"><i class="fas fa-heart"></i></a>
+                        {% else %}
+                            <a href="{% url 'add_topic_to_favorites' topic.id %}" class="favorite-icon" title="Добавить в избранное"><i class="fas fa-heart"></i></a>
+                        {% endif %}
+                    </div>
+                </div>
+                <a href="{% url 'add_words_to_topic' topic.id %}" style="display: inline-block; background-color: #2c44b6; color: #fff; text-decoration: none; border-radius: 20px; padding: 5px 15px; margin-bottom: 15px;">Добавить слова</a>
+                {% if topic.entries.exists %}
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background-color: #1f222b; color: #d1d4d7;">
+                                <th style="padding: 10px; border: 1px solid #2a2d37; text-align: left;">Английское слово</th>
+                                <th style="padding: 10px; border: 1px solid #2a2d37; text-align: left;">Транскрипция</th>
+                                <th style="padding: 10px; border: 1px solid #2a2d37; text-align: left;">Русский перевод</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for entry in topic.entries.all %}
+                                <tr style="background-color: #1f222b;">
+                                    <td style="padding: 10px; border: 1px solid #2a2d37;"><a href="{% url 'entry_detail' entry.eng_term %}" style="color: #2c44b6; text-decoration: none;">{{ entry.eng_term }}</a></td>
+                                    <td style="padding: 10px; border: 1px solid #2a2d37;">{{ entry.transcription }}</td>
+                                    <td style="padding: 10px; border: 1px solid #2a2d37;">{{ entry.rus_term }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p style="color: #a1a5aa;">В этой теме пока нет слов.</p>
+                {% endif %}
+            </div>
+        {% empty %}
+            <p style="color: #a1a5aa; text-align: center;">У вас пока нет тем в словарнике.</p>
+        {% endfor %}
+    </div>
+
+    <style>
+        .favorite-icon {
+            font-size: 20px;
+            color: #a1a5aa;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .favorite-icon.favorited {
+            color: #e74c3c;
+        }
+        .favorite-icon:hover {
+            color: #e74c3c;
+        }
+    </style>
+{% endblock %}

@@ -4,7 +4,7 @@
 {% block content %}
     <h2>Главная страница</h2>
 
-    <div style="max-width: 800px; margin: 0 auto;">
+    <div style="max-width: 1000px; margin: 0 auto;">
         <!-- Фильтр по тегам -->
         <div style="margin-bottom: 30px; display: flex; align-items: center; gap: 15px;">
             <label for="tag-filter" style="font-size: 18px; font-weight: 600; color: #333;">Фильтр по тегу:</label>
@@ -24,6 +24,8 @@
                         <tr style="background-color: #106a80; color: #fff;">
                             <th style="padding: 15px; text-align: left; font-size: 18px; font-weight: 600;">Английский термин</th>
                             <th style="padding: 15px; text-align: left; font-size: 18px; font-weight: 600;">Русский термин</th>
+                            <th style="padding: 15px; text-align: left; font-size: 18px; font-weight: 600;">Транскрипция</th>
+                            <th style="padding: 15px; text-align: left; font-size: 18px; font-weight: 600;">Описание</th>
                             <th style="padding: 15px; text-align: left; font-size: 18px; font-weight: 600;">Действия</th>
                         </tr>
                     </thead>
@@ -34,6 +36,8 @@
                                     <a href="{% url 'entry_detail' entry.eng_term %}" style="color: #106a80; text-decoration: none; font-weight: 500;">{{ entry.eng_term }}</a>
                                 </td>
                                 <td style="padding: 15px;">{{ entry.rus_term }}</td>
+                                <td style="padding: 15px;">{{ entry.transcription|default:"—" }}</td>
+                                <td style="padding: 15px;">{{ entry.description|default:"—" }}</td>
                                 <td style="padding: 15px;">
                                     {% if entry.id in favorite_ids %}
                                         <a href="{% url 'remove_from_favorites' entry.eng_term %}?next=home" style="color: #e74c3c; text-decoration: none; font-weight: 500;">Удалить из избранного</a>

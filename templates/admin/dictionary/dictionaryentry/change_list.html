@@ -1,0 +1,11 @@
+<!-- templates/admin/dictionary/dictionaryentry/change_list.html -->
+{% extends "admin/change_list.html" %}
+
+{% block object-tools-items %}
+    {% if show_import_button %}
+        <li>
+            <a href="{% url 'admin:dictionary_entry_import_excel' %}" class="addlink">Импортировать из Excel</a>
+        </li>
+    {% endif %}
+    {{ block.super }}
+{% endblock %}

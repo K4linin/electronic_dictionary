@@ -15,9 +15,9 @@ class UserProfileForm(forms.ModelForm):
         model = User
         fields = ['first_name', 'last_name', 'email']
         labels = {
-            'first_name': 'First Name',
-            'last_name': 'Last Name',
-            'email': 'Email',
+            'first_name': 'Имя',
+            'last_name': 'Фамилия',
+            'email': 'Электронная почта',
         }
 
 class ExtendedUserProfileForm(forms.ModelForm):
@@ -25,9 +25,9 @@ class ExtendedUserProfileForm(forms.ModelForm):
         model = UserProfile
         fields = ['group', 'vk_link', 'telegram_link']
         labels = {
-            'group': 'Group',
-            'vk_link': 'VK Link',
-            'telegram_link': 'Telegram Link',
+            'group': 'Группа',
+            'vk_link': 'Ссылка на ВКонтакте',
+            'telegram_link': 'Ссылка на Telegram',
         }
 
 class CardSetForm(forms.ModelForm):
@@ -35,8 +35,8 @@ class CardSetForm(forms.ModelForm):
         model = CardSet
         fields = ['name', 'tags']
         labels = {
-            'name': 'Set Name',
-            'tags': 'Tags',
+            'name': 'Название набора',
+            'tags': 'Теги',
         }
         widgets = {
             'tags': forms.CheckboxSelectMultiple(),
@@ -47,26 +47,26 @@ class VocabularyTopicForm(forms.ModelForm):
         model = VocabularyTopic
         fields = ['name']
         labels = {
-            'name': 'Topic Name',
+            'name': 'Название темы',
         }
 
 class AddWordsToTopicForm(forms.Form):
     search_query = forms.CharField(
         max_length=100,
         required=False,
-        label="Search Words",
-        widget=forms.TextInput(attrs={'placeholder': 'Enter search query...'})
+        label="Поиск слов",
+        widget=forms.TextInput(attrs={'placeholder': 'Введите запрос для поиска...'})
     )
     tags = forms.ModelMultipleChoiceField(
         queryset=Tag.objects.all(),
         required=False,
-        label="Select Tags",
+        label="Выберите теги",
         widget=forms.CheckboxSelectMultiple
     )
     entries = forms.ModelMultipleChoiceField(
         queryset=DictionaryEntry.objects.all(),
         widget=forms.CheckboxSelectMultiple,
-        label="Select Words to Add"
+        label="Выберите слова для добавления"
     )
 
     def __init__(self, *args, **kwargs):
@@ -99,14 +99,14 @@ def home(request):
     else:
         favorite_ids = []
     
-    return render(request, 'home.html', {'entries': entries, 'favorite_ids': favorite_ids, 'tags': tags})  # Убрали "dictionary/"
+    return render(request, 'home.html', {'entries': entries, 'favorite_ids': favorite_ids, 'tags': tags})
 
 def entry_detail(request, eng_term):
     entry = get_object_or_404(DictionaryEntry, eng_term=eng_term)
     is_favorite = False
     if request.user.is_authenticated:
         is_favorite = FavoriteEntry.objects.filter(user=request.user, entry=entry).exists()
-    return render(request, 'entry_detail.html', {'entry': entry, 'is_favorite': is_favorite})  # Убрали "dictionary/"
+    return render(request, 'entry_detail.html', {'entry': entry, 'is_favorite': is_favorite})
 
 def search(request):
     query = request.GET.get('q', '')
@@ -132,7 +132,7 @@ def search(request):
     else:
         favorite_ids = []
     
-    return render(request, 'search.html', {'entries': entries, 'query': query, 'favorite_ids': favorite_ids, 'tags': tags})  # Убрали "dictionary/"
+    return render(request, 'search.html', {'entries': entries, 'query': query, 'favorite_ids': favorite_ids, 'tags': tags})
 
 @login_required
 def flashcards(request):
@@ -160,7 +160,7 @@ def flashcards(request):
             card_set.user = request.user
             card_set.save()
             form.save_m2m()
-            messages.success(request, 'Card set created successfully!')
+            messages.success(request, 'Набор карточек успешно создан!')
             return redirect('flashcards')
     else:
         form = CardSetForm()
@@ -180,7 +180,7 @@ def flashcards(request):
             'form': form,
             'favorite_card_set_ids': favorite_card_set_ids,
             'favorite_ids': favorite_ids,
-        })  # Убрали "dictionary/"
+        })
     else:
         request.session['card_set_name'] = None
 
@@ -189,13 +189,13 @@ def flashcards(request):
         'tags': tags,
         'form': form,
         'favorite_card_set_ids': favorite_card_set_ids,
-    })  # Убрали "dictionary/"
+    })
 
 @login_required
 def vocabulary(request):
     default_topic, created = VocabularyTopic.objects.get_or_create(
         user=request.user,
-        name="All Words",
+        name="Все слова",
         defaults={'is_default': True}
     )
 
@@ -214,7 +214,7 @@ def vocabulary(request):
             topic.user = request.user
             topic.is_default = False
             topic.save()
-            messages.success(request, 'Topic created successfully!')
+            messages.success(request, 'Тема успешно создана!')
             return redirect('vocabulary')
     else:
         form = VocabularyTopicForm()
@@ -223,7 +223,7 @@ def vocabulary(request):
         'topics': topics,
         'form': form,
         'favorite_topic_ids': favorite_topic_ids,
-    })  # Убрали "dictionary/"
+    })
 
 @login_required
 def add_words_to_topic(request, topic_id):
@@ -238,14 +238,14 @@ def add_words_to_topic(request, topic_id):
         form = AddWordsToTopicForm(request.POST)
         if form.is_valid():
             topic.entries.add(*form.cleaned_data['entries'])
-            messages.success(request, 'Words added to topic successfully!')
+            messages.success(request, 'Слова успешно добавлены в тему!')
             return redirect('vocabulary')
     else:
         form = AddWordsToTopicForm(initial=initial_data)
     return render(request, 'add_words_to_topic.html', {
         'form': form,
         'topic': topic,
-    })  # Убрали "dictionary/"
+    })
 
 @login_required
 def add_topic_to_favorites(request, topic_id):
@@ -262,11 +262,11 @@ def remove_topic_from_favorites(request, topic_id):
 @login_required
 def personal_lists(request):
     entries = DictionaryEntry.objects.all()[:10]
-    return render(request, 'personal_lists.html', {'entries': entries})  # Убрали "dictionary/"
+    return render(request, 'personal_lists.html', {'entries': entries})
 
 def articles(request):
     articles = Article.objects.all().order_by('-created_at')
-    return render(request, 'articles.html', {'articles': articles})  # Убрали "dictionary/"
+    return render(request, 'articles.html', {'articles': articles})
 
 def register(request):
     if request.method == 'POST':
@@ -275,13 +275,13 @@ def register(request):
             user = form.save()
             UserProfile.objects.create(user=user)
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-            messages.success(request, 'Registration successful!')
+            messages.success(request, 'Регистрация прошла успешно!')
             return redirect('home')
         else:
-            messages.error(request, 'Error during registration. Please check your input.')
+            messages.error(request, 'Ошибка при регистрации. Пожалуйста, проверьте введённые данные.')
     else:
         form = UserCreationForm()
-    return render(request, 'register.html', {'form': form})  # Убрали "dictionary/"
+    return render(request, 'register.html', {'form': form})
 
 @login_required
 def add_to_favorites(request, eng_term):
@@ -335,7 +335,7 @@ def favorites(request):
         'entries': entries,
         'card_sets': card_sets,
         'topics': topics,
-    })  # Убрали "dictionary/"
+    })
 
 @login_required
 def profile(request):
@@ -351,20 +351,20 @@ def profile(request):
             password_form = PasswordChangeForm(user=request.user, data=request.POST)
             if password_form.is_valid():
                 password_form.save()
-                messages.success(request, 'Password changed successfully!')
+                messages.success(request, 'Пароль успешно изменён!')
                 return redirect('logout')
             else:
-                messages.error(request, 'Error changing password. Please check your input.')
+                messages.error(request, 'Ошибка при смене пароля. Пожалуйста, проверьте введённые данные.')
         else:
             user_form = UserProfileForm(request.POST, instance=request.user)
             profile_form = ExtendedUserProfileForm(request.POST, instance=profile)
             if user_form.is_valid() and profile_form.is_valid():
                 user_form.save()
                 profile_form.save()
-                messages.success(request, 'Profile updated successfully!')
+                messages.success(request, 'Профиль успешно обновлён!')
                 return redirect('profile')
             else:
-                messages.error(request, 'Error updating profile. Please check your input.')
+                messages.error(request, 'Ошибка при обновлении профиля. Пожалуйста, проверьте введённые данные.')
     else:
         user_form = UserProfileForm(instance=request.user)
         profile_form = ExtendedUserProfileForm(instance=profile)
@@ -373,9 +373,9 @@ def profile(request):
         'user_form': user_form,
         'profile_form': profile_form,
         'password_form': password_form,
-    })  # Убрали "dictionary/"
+    })
 
 def logout_view(request):
     logout(request)
-    messages.success(request, 'You have successfully logged out.')
+    messages.success(request, 'Вы успешно вышли из системы.')
     return redirect('home')

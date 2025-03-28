@@ -1,0 +1,16 @@
+<!-- templates/admin/import_excel_form.html -->
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+    <h1>{{ title }}</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div>
+            {{ form.as_p }}
+        </div>
+        <div>
+            <input type="submit" value="Импортировать">
+            <a href="{% url 'admin:index' %}" class="button cancel-link">Назад</a>
+        </div>
+    </form>
+{% endblock %}
